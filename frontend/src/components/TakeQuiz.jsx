@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import confetti from 'canvas-confetti';
 import API_BASE from '../config';
+import sounds from '../utils/soundEffects';
 
 function TakeQuiz({ quizId, onBackToList }) {
   const [quiz, setQuiz] = useState(null);
@@ -14,6 +16,9 @@ function TakeQuiz({ quizId, onBackToList }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // { [questionIndex]: optionIndex }
   
+  // Sound Mute Toggle state
+  const [isMuted, setIsMuted] = useState(false);
+
   // Submission & Result state
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
@@ -65,6 +70,45 @@ function TakeQuiz({ quizId, onBackToList }) {
     return () => clearInterval(timerRef.current);
   }, [loading, result, quiz, answers]);
 
+  // Trigger celebration effects (Sound + Confetti) when results are received
+  useEffect(() => {
+    if (!result) return;
+
+    if (result.percentage >= 50) {
+      if (!isMuted) {
+        sounds.playVictory();
+      }
+      // Confetti burst
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      // Special bonus fireworks confetti for high scorers!
+      if (result.percentage >= 80) {
+        setTimeout(() => {
+          confetti({
+            particleCount: 80,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 }
+          });
+          confetti({
+            particleCount: 80,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 }
+          });
+        }, 300);
+      }
+    } else {
+      if (!isMuted) {
+        sounds.playWrong();
+      }
+    }
+  }, [result]);
+
   // Auto-submit when time expires
   const handleAutoSubmit = async () => {
     alert('⏱️ Time has expired! Your quiz is being submitted automatically.');
@@ -87,6 +131,9 @@ function TakeQuiz({ quizId, onBackToList }) {
   };
 
   const handleSelectOption = (optionIndex) => {
+    if (!isMuted) {
+      sounds.playClick();
+    }
     setAnswers({
       ...answers,
       [currentIndex]: optionIndex
@@ -273,7 +320,10 @@ function TakeQuiz({ quizId, onBackToList }) {
 
           {/* Detailed Question Review */}
           <div className="text-start mt-4 pt-4 border-top">
-            <h4 className="fw-bold mb-3">Answer Review</h4>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h4 className="fw-bold mb-0">Answer Review</h4>
+              <small className="text-muted">Click review sound triggers</small>
+            </div>
 
             <div className="d-flex flex-column gap-3">
               {result.review.map((item, idx) => (
@@ -289,13 +339,22 @@ function TakeQuiz({ quizId, onBackToList }) {
                     <span className="fw-bold text-dark">
                       Question {item.questionNumber}: {item.questionText}
                     </span>
-                    <span
-                      className={`badge px-2 py-1 ${
+                    <button
+                      type="button"
+                      className={`badge border-0 px-2 py-1 ${
                         item.isCorrect ? 'bg-success' : 'bg-danger'
                       }`}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        if (!isMuted) {
+                          if (item.isCorrect) sounds.playCorrect();
+                          else sounds.playWrong();
+                        }
+                      }}
+                      title="Click to play answer sound"
                     >
-                      {item.isCorrect ? 'Correct' : 'Incorrect'}
-                    </span>
+                      {item.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    </button>
                   </div>
 
                   <div className="small mt-1">
@@ -328,7 +387,7 @@ function TakeQuiz({ quizId, onBackToList }) {
   return (
     <div className="card border-0 shadow-sm rounded-4 bg-white">
       <div className="card-body p-4 p-md-5">
-        {/* Top bar with Quizizz PIN Display & Timer */}
+        {/* Top bar with Quizizz PIN Display, Timer & Mute Button */}
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
           <div>
             <div className="d-flex align-items-center gap-2 mb-1">
@@ -342,7 +401,7 @@ function TakeQuiz({ quizId, onBackToList }) {
             <h4 className="fw-bold text-dark mb-0">{quiz.title}</h4>
           </div>
 
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center flex-wrap gap-2">
             {/* Live Countdown Timer Badge */}
             <div
               className={`badge px-3 py-2 fs-6 rounded-pill d-flex align-items-center gap-1 ${
@@ -353,6 +412,18 @@ function TakeQuiz({ quizId, onBackToList }) {
               <span>⏱️</span>
               <span className="fw-bold tracking-wider">{formatTimer(timeLeft)}</span>
             </div>
+
+            {/* Mute / Unmute Sound Button */}
+            <button
+              className={`btn btn-sm ${
+                isMuted ? 'btn-outline-danger' : 'btn-outline-secondary'
+              } rounded-3 d-flex align-items-center gap-1`}
+              onClick={() => setIsMuted(!isMuted)}
+              title={isMuted ? 'Unmute sounds' : 'Mute sounds'}
+            >
+              <span>{isMuted ? '🔇' : '🔊'}</span>
+              <span className="small">{isMuted ? 'Muted' : 'Sound'}</span>
+            </button>
 
             <button
               className="btn btn-outline-secondary btn-sm rounded-3"
