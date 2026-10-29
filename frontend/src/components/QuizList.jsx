@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE from '../config';
 
 function QuizList({ onSelectQuiz, onGoToCreate }) {
   const [quizzes, setQuizzes] = useState([]);
@@ -15,7 +16,7 @@ function QuizList({ onSelectQuiz, onGoToCreate }) {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://localhost:5050/api/quizzes');
+      const response = await axios.get(`${API_BASE}/api/quizzes`);
       setQuizzes(response.data);
     } catch (err) {
       setError('Unable to reach backend server. Make sure node server.js is running.');
@@ -33,7 +34,7 @@ function QuizList({ onSelectQuiz, onGoToCreate }) {
     e.stopPropagation();
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
-        await axios.delete(`http://localhost:5050/api/quizzes/${id}`);
+        await axios.delete(`${API_BASE}/api/quizzes/${id}`);
         setQuizzes(quizzes.filter(q => q._id !== id));
       } catch (err) {
         alert('Failed to delete quiz.');

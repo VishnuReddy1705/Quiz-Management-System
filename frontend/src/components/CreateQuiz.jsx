@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_BASE from '../config';
 
 function CreateQuiz({ onQuizCreated, onCancel }) {
   const [title, setTitle] = useState('');
@@ -99,7 +100,7 @@ function CreateQuiz({ onQuizCreated, onCancel }) {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5050/api/quizzes', {
+      const response = await axios.post(`${API_BASE}/api/quizzes`, {
         title: title.trim(),
         description: description.trim(),
         category: finalCategory,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE from '../config';
 
 function ResultsHistory({ onGoToQuizzes }) {
   const [results, setResults] = useState([]);
@@ -10,7 +11,7 @@ function ResultsHistory({ onGoToQuizzes }) {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://localhost:5050/api/quizzes/data/results');
+      const response = await axios.get(`${API_BASE}/api/quizzes/data/results`);
       setResults(response.data);
     } catch (err) {
       setError('Failed to load past submissions.');

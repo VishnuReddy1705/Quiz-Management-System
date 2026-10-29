@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import API_BASE from '../config';
 
 function TakeQuiz({ quizId, onBackToList }) {
   const [quiz, setQuiz] = useState(null);
@@ -26,7 +27,7 @@ function TakeQuiz({ quizId, onBackToList }) {
     const fetchQuiz = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:5050/api/quizzes/${quizId}`);
+        const response = await axios.get(`${API_BASE}/api/quizzes/${quizId}`);
         const data = response.data;
         
         // Anti-Cheating: Randomize question order on quiz load
@@ -96,7 +97,7 @@ function TakeQuiz({ quizId, onBackToList }) {
     setSubmitting(true);
     clearInterval(timerRef.current);
     try {
-      const response = await axios.post(`http://localhost:5050/api/quizzes/${quizId}/submit`, {
+      const response = await axios.post(`${API_BASE}/api/quizzes/${quizId}/submit`, {
         studentName: studentName.trim() || 'Guest Student',
         answers
       });
