@@ -1,0 +1,12 @@
+{
+  "name": "quiz-management-system",
+  "version": "1.0.0",
+  "description": "Online Quiz Management System built with Node.js, Express, MongoDB, React, and Bootstrap",
+  "scripts": {
+    "start-backend": "cd backend && node server.js",
+    "start-frontend": "cd frontend && npm run dev"
+  },
+  "keywords": ["quiz", "react", "nodejs", "mongodb", "bootstrap"],
+  "author": "",
+  "license": "ISC"
+}
